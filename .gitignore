@@ -1,35 +1,10 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
-/node_modules
-/.pnp
-.pnp.js
-
-# testing
-/coverage
-
-# next.js
-/.next
-
-# production
-/build
-/out
-
-# misc
+# 本地环境（本仓零依赖，任何 env 文件都不入库）
+.env*
 .DS_Store
-*.pem
 Thumbs.db
+*.pem
+local/
 
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# dotenv local files
-.env*.local
-
-# local folder
-local
-
-# vercel
-.vercel
+# 依赖与产物
+node_modules/
+_pages/
