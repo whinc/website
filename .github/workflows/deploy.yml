@@ -40,8 +40,10 @@ jobs:
           TCB_SECRET_ID: ${{ secrets.TCB_SECRET_ID }}
           TCB_SECRET_KEY: ${{ secrets.TCB_SECRET_KEY }}
         run: tcb login --apiKeyId "$TCB_SECRET_ID" --apiKey "$TCB_SECRET_KEY"
+      - name: 静态托管信息
+        run: tcb hosting detail -e ucalc-8gcrvzxk48dd172e
       - name: 部署静态托管
-        run: tcb hosting deploy ./site -e ucalc-8gcrvzxk48dd172e
+        run: tcb hosting deploy ./site -e ucalc-8gcrvzxk48dd172e --retry-count 2
 
   deploy-pages:
     needs: gate
