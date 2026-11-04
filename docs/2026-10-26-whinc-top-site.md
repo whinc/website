@@ -1,6 +1,8 @@
 # whinc.top 站点与域名（决策正本）
 
-2026-10-26 定案并上线。记录「为什么这样切」，运行命令见 `website/README.md`，视觉契约见 `website/DESIGN.md`。
+2026-10-26 定案并上线。记录「为什么这样切」，运行命令见仓库根 `README.md`，视觉契约见 `docs/DESIGN.md`。
+
+2026-11-04 起站点从 `ucalc` 仓的 `website/` 迁到本仓 `site/`，部署改由 GitHub Actions 驱动（gate → CloudBase 与 Pages 并行）。
 
 ## 站点模型
 
@@ -56,6 +58,10 @@
 - 恢复 ucalc（如需）：`tcb domains add ucalc.whinc.top --certid amh2c2b7 --access-type CDN` → 路由 `/` → `STATIC_STORE staticstore` → CNAME `ucalc.whinc.top.cdn.dnsv1.com`。
 
 ## 发布记录
+
+2026-11-04：站点迁入本仓 `site/`，CI 上线。`gate`（9 条产物门禁，含新增「站内引用必须相对，404 除外」）→ `deploy-cloudbase`（`tcb hosting deploy ./site`）与 `deploy-pages`（排除 `404.html` 组装 `_pages/`）并行。首轮 CloudBase 部署被 COS 拒绝（`Access Denied`，51 个文件全失败）：`QcloudTCBFullAccess` 只覆盖 `tcb:*`，而静态托管落在**共享桶** `1a69-static-<envId>-<appid>`（不是环境云存储桶），需要单独的 COS 策略。已建自定义策略 `ucalc-website-hosting-cos`（`cos:HeadBucket/GetBucket/GetObject/HeadObject/PutObject`，资源限定该桶 `/*`）并挂到子用户 `ucalc-website-ci`，重跑通过（cloudbase 56s / pages 16s）。
+
+验收：`whinc.top` 与 `whinc.github.io/ucalc-website` 各 64 条路径（页面 + 全部站内相对引用）全 200；6 个关键文件字节与本地一致；`https://whinc.top/__nope__` 仍为 200 + 404.html 正文（软 404，延续 2026-11-02 结论）；Pages 的 `404.html` 按设计不发布（子路径下根绝对路径会失效），走 GitHub 默认 404。**新增已知限制**：HTML 响应头不再带 charset —— `tcb hosting deploy` 只按扩展名写 `Content-Type: text/html`，原先手工跑的 `set-html-charset.mjs` 未纳入 CI（页面内有 `<meta charset>`，渲染不受影响）。
 
 2026-11-02：`xiaoqingwa/` 落地页与隐私政策随门户同批上线（54 个文件，`--ignore README.md,DESIGN.md`）。`whinc.top` 实测 `/`、`/xiaoermei/`、`/xiaoqingwa/`、`/xiaoqingwa/privacy.html`、`robots.txt`、`sitemap.xml` 与抽样静态资源均 200 且字节数与本地一致；门户含「小青蛙伴学」卡，sitemap 三条 `<loc>` 正确。同轮修 `websiteGate` 两处过期判据：canonical / og:url 允许自闭合标签；可索引页面按 `robots` meta 动态排除，不再硬编码 `404.html`。
 
