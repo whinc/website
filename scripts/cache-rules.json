@@ -1,0 +1,83 @@
+{
+  "EnvId": "ucalc-8gcrvzxk48dd172e",
+  "Domain": {
+    "Domain": "whinc.top",
+    "Extension": {
+      "Cache": {
+        "Rules": [
+          {
+            "Description": "静态资源：边缘 1 天 / 浏览器 10 分钟（文件名不带 hash，故浏览器不放 1 年）",
+            "Enable": true,
+            "Condition": {
+              "Target": "file_extension",
+              "MatchType": "exact",
+              "Values": [
+                "css",
+                "js",
+                "webp",
+                "png",
+                "jpg",
+                "jpeg",
+                "svg",
+                "woff2",
+                "ico",
+                "gif"
+              ]
+            },
+            "Actions": [
+              {
+                "Type": "Cache",
+                "Cache": {
+                  "CacheTime": 86400,
+                  "MaxAgeTime": 600
+                }
+              }
+            ]
+          },
+          {
+            "Description": "HTML / sitemap：边缘 60 秒 / 浏览器 60 秒（发布后最多 1 分钟生效）",
+            "Enable": true,
+            "Condition": {
+              "Target": "file_extension",
+              "MatchType": "exact",
+              "Values": [
+                "html",
+                "xml",
+                "txt"
+              ]
+            },
+            "Actions": [
+              {
+                "Type": "Cache",
+                "Cache": {
+                  "CacheTime": 60,
+                  "MaxAgeTime": 60
+                }
+              }
+            ]
+          },
+          {
+            "Description": "目录首页（/、/xiaoermei/、/xiaoqingwa/ …）：同上 60 秒",
+            "Enable": true,
+            "Condition": {
+              "Target": "url_path",
+              "MatchType": "suffix",
+              "Values": [
+                "/"
+              ]
+            },
+            "Actions": [
+              {
+                "Type": "Cache",
+                "Cache": {
+                  "CacheTime": 60,
+                  "MaxAgeTime": 60
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}
