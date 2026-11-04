@@ -8,3 +8,4 @@ local/
 # 依赖与产物
 node_modules/
 _pages/
+/.codebuddy/settings.local.json
