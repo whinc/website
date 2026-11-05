@@ -1,136 +1,52 @@
-# whinc.top 站点
+# 两款微信小程序，打开微信就能用
 
-「小而美工具」的产品介绍站，纯静态。同一份产物部署到两个地方：
+「小而美工具」把万年历、房贷、BMI、亲戚称呼这些日常小工具装进一个微信小程序；「小青蛙伴学」陪孩子练拼音、汉字笔顺、20 以内加减法和英语单词。
 
-- **CloudBase 静态托管** → <https://whinc.top>（主站，自有域名 + CDN）
-- **GitHub Pages** → <https://whinc.github.io/ucalc-website/>（备用通道，子路径）
+一个人做的，不用注册，数据留在本机。主站：<https://whinc.top>
 
-小程序主体在 [whinc/ucalc](https://github.com/whinc/ucalc)，本仓只负责站点。
+| 「小而美工具」 | 「小青蛙伴学」 |
+| :---: | :---: |
+| <img src="site/xiaoermei/assets/brand/qrcode.png" width="220" alt="小而美工具微信小程序码"> | <img src="site/xiaoqingwa/assets/qr.png" width="220" alt="小青蛙伴学微信小程序码"> |
+| 微信扫码，或搜一搜「小而美工具」 | 微信扫码，或搜一搜「小青蛙伴学」 |
 
-## 目录
+## 小而美工具
 
-```
-site/                 部署产物（CloudBase 部署 ./site 即站点根）
-  index.html          门户（/）：单栏索引，每款产品一张等权卡 + 每款两张预览
-  portal.css
-  404.html  robots.txt  sitemap.xml
-  xiaoermei/          产品页（/xiaoermei/）
-    index.html  styles.css  main.js
-    assets/brand/     logo、小程序码、分享图、favicon
-    assets/shots/     12 张真实界面截图（WebP，828px）+ 2 张 preview-*.webp
-  xiaoqingwa/         产品页（/xiaoqingwa/）：单页静态介绍 + 隐私政策
-    index.html        落地页（SSG 产物：官方组件 SSR，浏览器零 React）
-    privacy.html      隐私政策（noindex,follow，不进 sitemap）
-    assets/           logo、小程序码、5 张界面图、OG 图、组件库 CSS、字体
-scripts/gate.mjs      站点产物门禁（node:test，零依赖）
-scripts/set-*.mjs     运维脚本：补 HTML charset、写桶静态网站配置（手工跑，不进 CI）
-scripts/cache-rules.json  scripts/website-config.before-20261028.xml   CDN 缓存规则与桶配置快照
-docs/
-  DESIGN.md           视觉契约与门禁读数
-  2026-10-26-whinc-top-site.md   域名/证书/回滚/已知限制的正本
-  搜一搜…             小程序商店物料（ai / sketch / pdf / png），不参与部署
-```
+一个微信小程序，装下日常会用到的各种小工具。每款只做一件事，共用一套 iOS 质感的界面，打开就知道怎么用。
 
-新页面 = 新目录 `<slug>/`，与 `xiaoermei/` 平级；不要加 `/apps/` 层。
+- **日历与农历**：万年历、老黄历、节日节气、择吉日、佛历、道历、养生钟、时钟、生日查询、纪念日倒计时
+- **健康**：成人 BMI、儿童身高体重、青少年身高体重、四季色彩
+- **算账**：房贷计算、个税计算器、退休年龄、单位换算、计算器
+- **生活**：亲戚称呼、二维码制作与美化、手电筒、表情符号、敲木鱼、尖叫鸡、补光灯
 
-## 本地预览
+不用下载 App，不占手机桌面；换手机后重新扫码即可。免费版有少量广告，看一段视频可得 VIP 时长免广告。
 
-站内引用全是相对路径，必须在站点根下预览：
+## 小青蛙伴学
 
-```bash
-python3 -m http.server 4174 --directory site
-# http://localhost:4174/                          门户
-# http://localhost:4174/xiaoermei/                产品页
-# http://localhost:4174/xiaoqingwa/               产品页
-# http://localhost:4174/xiaoqingwa/privacy.html   隐私政策
-```
+小学课内同步的短练习。每页只做一件事，孩子打开就知道该点哪里；答对庆祝，答错鼓励再试，没有红叉、没有倒计时、没有排名。
 
-## 门禁
+- **拼音**：声母、韵母、整体认读音节、四声、拼读、音节表、易混音对比，每个音节都能点读
+- **汉字与古诗**：课内生字按学期分册，笔顺动画 + 词组 + 拼音 + 发音；古诗逐句跟读高亮
+- **数学**：数一数、加法、减法、20 以内凑十破十，用图形演示
+- **英语**：字母发音、主题单词听音选图、听读跟读
 
-```bash
-node scripts/gate.mjs
-```
+没有充值入口，学习内容免费；孩子学习的页面里没有广告、没有弹窗、没有开屏广告。学习进度和奖励存在手机本地。
 
-9 条断言（CI 的 gate job 跑的就是它）：扫描域覆盖、site/ 不放文档、无占位符、canonical 唯一且等于
-`https://whinc.top` + 路径、og:url 同源同址、备案号恰好一次、sitemap 与可索引页一致、robots 只列本站
-sitemap、**站内引用必须相对（404.html 除外）**。
+## 共同的取舍
 
-最后一条是 2026-11-03 新增：`xiaoqingwa/index.html` 是外部 SSG 产物，重新生成会退回 `/xiaoqingwa/...`
-根绝对路径，那样在 Pages 子路径下整页掉样式——门禁负责拦。
+- **不用注册**：没有账号、手机号或表单，打开微信就能用。
+- **数据留在本机**：输入和进度不上传服务器。
+- **一个人维护**：不做课程、不做题库、不承诺提分，也不写无法验证的宣传。
 
-## 部署
+## 关于
 
-push 到 `main` 自动部署（也可在 Actions 页 `workflow_dispatch` 手动触发）。`.github/workflows/deploy.yml`
-三个 job：`gate` → `deploy-cloudbase` 与 `deploy-pages` 并行。
+反馈、合作：微信 `iCloudCoding`
 
-凭据是 GitHub Actions secrets `TCB_SECRET_ID` / `TCB_SECRET_KEY`，对应腾讯云子账号 `ucalc-website-ci`
-（仅编程访问；策略 `QcloudTCBFullAccess` + `QcloudCDNReadOnlyAccess`）。
+备案号：琼ICP备2023011144号 · © 2026 whinc.top
 
-手工部署（等价命令）：
+## 开发
 
-```bash
-npx --yes --package @cloudbase/cli@3.8.9 tcb hosting deploy ./site -e ucalc-8gcrvzxk48dd172e
-```
+本仓是主站的静态源码和部署流水线；小程序源码分别在 [whinc/ucalc](https://github.com/whinc/ucalc)（小而美工具）与 [whinc/uson](https://github.com/whinc/uson)（小青蛙伴学）。
 
-- **不加 `--prune`**：桶根下还有别的前缀，prune 会一并删掉。
-- 门户与 `/xiaoqingwa/` 必须同批部署，否则首页第二张卡是死链。
-- Pages 产物在 CI 里组装 `_pages/` 时排除 `404.html`：它用的是根绝对路径（托管方会在任意深度回它，
-  只能用绝对路径），放进子路径会整页掉资源，所以 Pages 走 GitHub 默认 404。
-
-## 已知限制
-
-- **CloudBase 的 404 是软 404**：不存在的路径返回 200 + `404.html` 正文（网关固定改写成 200，COS 侧
-  `OriginalHttpStatus` 已开也没用）。页面自带 `noindex`，不会被收录。
-- **无尾斜杠路径**：`https://whinc.top/xiaoermei`（不带 `/`）返回 200 但不跳转，此时相对路径按
-  `/xiaoermei` 的父目录解析，CSS/图片会失效。站内链接、sitemap、canonical 全带斜杠，因此只有手敲 URL 会踩到。
-- **HTML 响应头没有 charset**：`tcb hosting deploy` 只按扩展名写 `Content-Type: text/html`。页面内有
-  `<meta charset="utf-8">`，浏览器渲染不受影响；要补 HTTP 头需在部署后用 COS `CopyObject` 改元数据
-  （`scripts/set-html-charset.mjs` 可手工补，这一步没有纳入 CI）。
-- `www.whinc.top` 不解析：CloudBase 个人版自定义域名上限 1 个，被裸域占满。
-
-## 运维脚本（手工，不进 CI）
-
-| 文件 | 用途 | 何时跑 |
-|---|---|---|
-| `scripts/set-html-charset.mjs` | 用 COS `CopyObject` 就地给 HTML 补 `Content-Type: text/html; charset=utf-8`（只改元数据，ETag 不变） | 每次 `tcb hosting deploy` 之后；先 `--dry-run` 看现状 |
-| `scripts/set-error-document.mjs` | 写桶静态网站配置：错误页 `404.html` + `OriginalHttpStatus: Enabled`，并清掉遗留的 404 重定向规则 | 桶配置被改动或 404 行为异常时；`--dry-run` 只读 |
-| `scripts/cache-rules.json` | CDN 缓存规则载荷：静态资源边缘 1 天 / 浏览器 10 分钟，HTML·sitemap 60 秒，目录首页 60 秒 | 需要重新应用缓存规则时（控制台按此填或走 API） |
-| `scripts/website-config.before-20261028.xml` | 2026-10-28 改动前的桶静态网站配置快照（含导致 404 死循环的 `RoutingRules`） | 只有要回滚那次改动时才用 |
-
-凭据：两个脚本优先读环境变量 `COS_SECRET_ID` / `COS_SECRET_KEY`（可选 `COS_SESSION_TOKEN`），
-没有则回退 `~/.tccli/default.credential`。**tccli 的 OAuth 临时凭据会被 COS 拒绝**
-（`InvalidAccessKeyId`），那条回退路只在用永久密钥登录时可用。
-
-## 改内容时要同步的位置
-
-| 改什么 | 一起改 |
-|---|---|
-| 产品页工具名/描述 | 按钮 `data-*`、索引里的可点名称（与同名按钮同源）、JSON-LD `featureList` |
-| FAQ | 可见 FAQ 与 JSON-LD `mainAnswer` 必须同义 |
-| 门户产品卡 | `ItemList` JSON-LD、`sitemap.xml`、该产品在预览带的两张图（见 DESIGN「门户是索引」） |
-| 门户预览带 | 每款两张、3:4 预裁（`preview-*.webp`），组内 12 / 组间 28 与卡片同栅格 |
-| 备案号 | 各页面页脚的 `<a class="icp">`（门户、xiaoermei、xiaoqingwa、privacy 四处） |
-| 小青蛙伴学文案 | `xiaoqingwa/index.html` 可见文案与 JSON-LD 同义；改数量/功能时连带 FAQ、`#trust`、页脚免责行 |
-| 小青蛙伴学隐私页 | `xiaoqingwa/privacy.html`；启用任何统计前先改「第三方与 Cookie」段，再上线脚本 |
-| 截图 | 用微信开发者工具模拟器（iPhone 12/13 Pro，390×844）逐页截取；只换 `assets/shots/` 同名 WebP：`magick in.png -resize 828x -strip -quality 82 out.webp` |
-| 截图新鲜度 | 页面改版或工具转 `offline` 后必须重拍；下线工具的截图、索引条目、chip 与 JSON-LD `featureList` 同轮删除 |
-| 首屏搜索胶囊 | 文案「小而美工具」与小程序名、页尾 `#copy-name` 同源 |
-| 预览高度 | `--screen-h: min(460px, 52svh - 26px, 100svh - 380px)`；调完复跑 390 截图确认整屏可见 |
-
-## 设计门禁
-
-```bash
-S=~/.codebuddy/skills/design-taste-frontend/scripts
-node $S/lint.mjs site/index.html site/portal.css \
-  site/xiaoermei/index.html site/xiaoermei/styles.css site/xiaoermei/main.js \
-  site/xiaoqingwa/index.html site/xiaoqingwa/privacy.html
-node $S/inspect.mjs http://localhost:4174/
-```
-
-依赖 `~/.codebuddy/skills`，只在本机跑；CI 只跑零依赖的 `scripts/gate.mjs`。读数与辩护记录在
-`docs/DESIGN.md`「门禁与辩护」，改版后更新那张表。
-
-## 历史
-
-2026-11-03 从 `ucalc` 仓的 `website/` 迁出，替换掉本仓原来的 Next.js 落地页（旧代码仍在 git 历史里，
-`b560223` 之前）。域名、证书、回滚值见 `docs/2026-10-26-whinc-top-site.md`。
+- [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) — 目录结构、本地预览、门禁、部署、运维脚本
+- [docs/DESIGN.md](docs/DESIGN.md) — 视觉契约与设计门禁读数
+- [docs/2026-10-26-whinc-top-site.md](docs/2026-10-26-whinc-top-site.md) — 域名、证书、回滚与已知限制

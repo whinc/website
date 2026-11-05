@@ -1,6 +1,8 @@
 # whinc.top 站点与域名（决策正本）
 
-2026-10-26 定案并上线。记录「为什么这样切」，运行命令见仓库根 `README.md`，视觉契约见 `docs/DESIGN.md`。
+2026-10-26 定案并上线。记录「为什么这样切」，运行命令见 `docs/DEVELOPMENT.md`，视觉契约见 `docs/DESIGN.md`。
+
+2026-11-05：仓库由 `ucalc-website` 更名为 `website`，Pages 备用地址变为 `https://whinc.github.io/website/`；下文出现的旧地址与旧名是当时的记录，不改写。
 
 2026-11-04 起站点从 `ucalc` 仓的 `website/` 迁到本仓 `site/`，部署改由 GitHub Actions 驱动（gate → CloudBase 与 Pages 并行）。
 
