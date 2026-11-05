@@ -11,7 +11,8 @@
  * - 发布产物不含占位符与本地路径；
  * - sitemap 的 <loc> 集合 == 有 canonical 的页面集合；
  * - robots.txt 只列该 sitemap；
- * - 站内引用必须相对（404.html 除外）。
+ * - 站内引用必须相对（404.html 除外）；
+ * - README 引用的仓库相对资源都存在。
  *
  * 边界：只校验产物文本。线上是否可达、证书是否有效、CDN 缓存是否刷新都不在本门范围。
  */
@@ -178,4 +179,18 @@ test("站内引用必须相对（404.html 除外）", () => {
     }
   }
   assert.deepEqual(wrong, []);
+});
+
+test("README 引用的仓库相对资源都存在", () => {
+  const md = read("README.md");
+  const refs = [
+    ...md.matchAll(/<img[^>]+src="([^"]+)"/g),
+    ...md.matchAll(/!\[[^\]]*\]\(([^)]+)\)/g),
+  ]
+    .map((m) => m[1])
+    .filter((src) => !/^(?:https?:)?\/\//.test(src));
+  assert.ok(refs.length > 0, "README 缺少小程序码图片");
+  for (const src of refs) {
+    assert.ok(fs.existsSync(path.join(REPO_ROOT, src)), "README 引用的 " + src + " 不存在");
+  }
 });
