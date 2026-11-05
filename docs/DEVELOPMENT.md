@@ -75,7 +75,8 @@ push 到 `main` 自动部署（也可在 Actions 页 `workflow_dispatch` 手动�
 三个 job：`gate` → `deploy-cloudbase` 与 `deploy-pages` 并行。
 
 触发条件带 `paths` 过滤：只有 `site/**`、`scripts/gate.mjs`、`.github/workflows/deploy.yml` 变化才跑；
-改 README、`docs/`、`.claude/` 不会触发一次生产部署。
+改 README、`docs/`、`.claude/` 不会触发一次生产部署。2026-11-05 用一条只改本文件的 push 实测过：
+没有新的 workflow run 产生。
 
 凭据是 GitHub Actions secrets `TCB_SECRET_ID` / `TCB_SECRET_KEY`，对应腾讯云子账号 `ucalc-website-ci`
 （仅编程访问；策略 `QcloudTCBFullAccess` + `QcloudCDNReadOnlyAccess`）。
