@@ -10,7 +10,7 @@
 
 ## 更名记录
 
-2026-11-05：仓库从 `ucalc-website` 更名为 `website`，Pages 备用地址随之变为 `https://whinc.github.io/website/`。CI 与构建脚本里没有仓库名字面量，改名对流水线是零改动。
+2026-11-05：仓库从 `ucalc-website` 更名为 `website`，Pages 备用地址随之变为 `https://whinc.github.io/website/`。旧 Pages 地址**不跳转，直接 404**（仓库页 URL 仍会重定向，Pages 不会）。CI 与构建脚本里没有仓库名字面量，改名对流水线是零改动。
 
 以下外部资源**保留旧名**，不影响功能，看到不必困惑：
 
