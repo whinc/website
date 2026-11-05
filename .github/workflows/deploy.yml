@@ -3,6 +3,11 @@ name: deploy
 on:
   push:
     branches: [main]
+    # 只在这些路径变化时部署；文档、README、.claude/ 的改动不触发
+    paths:
+      - site/**
+      - scripts/gate.mjs
+      - .github/workflows/deploy.yml
   workflow_dispatch:
 
 permissions:
