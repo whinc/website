@@ -4,7 +4,7 @@
 
 2026-11-05：仓库由 `ucalc-website` 更名为 `website`，Pages 备用地址变为 `https://whinc.github.io/website/`；下文出现的旧地址与旧名是当时的记录，不改写。
 
-2026-11-04 起站点从 `ucalc` 仓的 `website/` 迁到本仓 `site/`，部署改由 GitHub Actions 驱动（gate → CloudBase 与 Pages 并行）。
+2026-11-04 起站点迁到本仓 `site/`，部署改由 GitHub Actions 驱动（gate → CloudBase 与 Pages 并行）。
 
 ## 站点模型
 
@@ -20,15 +20,15 @@
 | 环境 | `ucalc-8gcrvzxk48dd172e`（个人版 `baas_personal`，至 2028-06-27） |
 | 自定义域名上限 | **1 个**（套餐硬限制，预检 `QUOTA_EXCEEDED`） |
 | 绑定 | `whinc.top`，AccessType=CDN，路由 `/` → `STATIC_STORE staticstore` |
-| 证书 | `b5kgiPpD`（TrustAsia 免费 DV，覆盖 `whinc.top` + `www.whinc.top`，2026-09-26 → 2026-12-25） |
+| 证书 | TrustAsia 免费 DV，覆盖 `whinc.top` + `www.whinc.top`，2026-09-26 → 2026-12-25 |
 | DNS | `@` CNAME → `whinc.top.cdn.dnsv1.com`（TTL 600）；归属权 TXT `_cloudbase-challenge` = 环境 ID |
 
 **域名上限 1 是这套方案的关键约束**：换域名时必须先解绑旧域名，中间存在空窗；两个域名并存需要升级套餐。`www` 因此无法绑定。
 
 ## 旧域名处置
 
-- `ucalc.whinc.top`：**下线**。删路由 → 解绑 → 删 DNS（RecordId 2236246150）。无 301 —— 网关路由只支持 `pathRewrite`，没有 redirect；CDN 控制台里也没有该域名可配。旧链接直接失效，不做迁移。
-- `xiaoermei.whinc.top`：不绑。证书 `bsWZxEPL`（至 2027-01-24）闲置，到期自然作废。
+- `ucalc.whinc.top`：**下线**。删路由 → 解绑 → 删 DNS。无 301 —— 网关路由只支持 `pathRewrite`，没有 redirect；CDN 控制台里也没有该域名可配。旧链接直接失效，不做迁移。
+- `xiaoermei.whinc.top`：不绑。旧证书（至 2027-01-24）闲置，到期自然作废。
 - `www.whinc.top`：不解析。启用需要升级套餐，或在 DNSPod 控制台手加「显性 URL」（DNSPod API 不接受 URL 记录类型）。
 
 ## SEO
@@ -57,11 +57,11 @@
 
 - 撤站：把 `root-index.before.html` 传回根 `index.html`，删除 `xiaoermei/`、`portal.css`、`404.html`、`robots.txt`、`sitemap.xml`。
 - 撤域名：`tcb routes delete whinc.top -p /` → `tcb domains rm whinc.top` → 删 `@` CNAME。
-- 恢复 ucalc（如需）：`tcb domains add ucalc.whinc.top --certid amh2c2b7 --access-type CDN` → 路由 `/` → `STATIC_STORE staticstore` → CNAME `ucalc.whinc.top.cdn.dnsv1.com`。
+- 恢复 ucalc（如需）：`tcb domains add ucalc.whinc.top --certid <证书 ID> --access-type CDN` → 路由 `/` → `STATIC_STORE staticstore` → CNAME `ucalc.whinc.top.cdn.dnsv1.com`。
 
 ## 发布记录
 
-2026-11-04：站点迁入本仓 `site/`，CI 上线。`gate`（9 条产物门禁，含新增「站内引用必须相对，404 除外」）→ `deploy-cloudbase`（`tcb hosting deploy ./site`）与 `deploy-pages`（排除 `404.html` 组装 `_pages/`）并行。首轮 CloudBase 部署被 COS 拒绝（`Access Denied`，51 个文件全失败）：`QcloudTCBFullAccess` 只覆盖 `tcb:*`，而静态托管落在**共享桶** `1a69-static-<envId>-<appid>`（不是环境云存储桶），需要单独的 COS 策略。已建自定义策略 `ucalc-website-hosting-cos`（`cos:HeadBucket/GetBucket/GetObject/HeadObject/PutObject`，资源限定该桶 `/*`）并挂到子用户 `ucalc-website-ci`，重跑通过（cloudbase 56s / pages 16s）。
+2026-11-04：站点迁入本仓 `site/`，CI 上线。`gate`（9 条产物门禁，含新增「站内引用必须相对，404 除外」）→ `deploy-cloudbase`（`tcb hosting deploy ./site`）与 `deploy-pages`（排除 `404.html` 组装 `_pages/`）并行。首轮 CloudBase 部署被 COS 拒绝（`Access Denied`，51 个文件全失败）：`QcloudTCBFullAccess` 只覆盖 `tcb:*`，而静态托管落在**共享桶** `1a69-static-<envId>-<appid>`（不是环境云存储桶），需要单独的 COS 策略。已建一条自定义策略（该桶 `/*` 的读写）并挂到 CI 子用户，重跑通过（cloudbase 56s / pages 16s）。
 
 验收：`whinc.top` 与 `whinc.github.io/ucalc-website` 各 64 条路径（页面 + 全部站内相对引用）全 200；6 个关键文件字节与本地一致；`https://whinc.top/__nope__` 仍为 200 + 404.html 正文（软 404，延续 2026-11-02 结论）；Pages 的 `404.html` 按设计不发布（子路径下根绝对路径会失效），走 GitHub 默认 404。**新增已知限制**：HTML 响应头不再带 charset —— `tcb hosting deploy` 只按扩展名写 `Content-Type: text/html`，原先手工跑的 `set-html-charset.mjs` 未纳入 CI（页面内有 `<meta charset>`，渲染不受影响）。
 

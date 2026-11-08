@@ -5,7 +5,7 @@
 - 构建 / 部署 / 门禁 / 运维：docs/DEVELOPMENT.md
 - 视觉契约、改版门禁读数：docs/DESIGN.md
 - 域名、证书、回滚、已知限制：docs/2026-10-26-whinc-top-site.md
-- 小程序源码在兄弟仓 `../ucalc`、`../uson`，不在本仓
+- 小程序源码在私有仓，不在本仓
 
 ## 改完跑什么
 

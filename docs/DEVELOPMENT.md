@@ -5,7 +5,7 @@
 ## 仓库边界
 
 - 本仓只放站点：`site/` 是部署产物，CloudBase 部署 `./site` 即站点根。
-- 小程序源码不在这里：[whinc/ucalc](https://github.com/whinc/ucalc)（小而美工具）、[whinc/uson](https://github.com/whinc/uson)（小青蛙伴学）。
+- 小程序源码在私有仓，不在这里。
 - 两个部署目标：**CloudBase 静态托管** → <https://whinc.top>（主站，自有域名 + CDN）；**GitHub Pages** → <https://whinc.github.io/website/>（备用通道，子路径）。
 
 ## 更名记录
@@ -14,8 +14,8 @@
 
 以下外部资源**保留旧名**，不影响功能，看到不必困惑：
 
-- 腾讯云子账号 `ucalc-website-ci`、自定义策略 `ucalc-website-hosting-cos`
-- CloudBase 环境 ID `ucalc-8gcrvzxk48dd172e` 与共享桶 `1a69-static-ucalc-8gcrvzxk48dd172e-1252521100`（环境 ID 不可改）
+- 腾讯云子账号与自定义 COS 策略沿用旧名（策略只开该桶的读写）
+- CloudBase 环境 ID `ucalc-8gcrvzxk48dd172e`（不可改；桶名见 `tcb hosting detail`）
 
 ## 目录
 
@@ -62,9 +62,9 @@ python3 -m http.server 4174 --directory site
 node scripts/gate.mjs
 ```
 
-9 条断言（CI 的 gate job 跑的就是它）：扫描域覆盖、site/ 不放文档、无占位符、canonical 唯一且等于
+11 条断言（CI 的 gate job 跑的就是它）：扫描域覆盖、site/ 不放文档、无占位符、canonical 唯一且等于
 `https://whinc.top` + 路径、og:url 同源同址、备案号恰好一次、sitemap 与可索引页一致、robots 只列本站
-sitemap、**站内引用必须相对（404.html 除外）**。
+sitemap、**站内引用必须相对（404.html 除外）**、**跟踪文本不含凭据特征**。
 
 最后一条是 2026-11-03 新增：`xiaoqingwa/index.html` 是外部 SSG 产物，重新生成会退回 `/xiaoqingwa/...`
 根绝对路径，那样在 Pages 子路径下整页掉样式——门禁负责拦。
@@ -78,8 +78,8 @@ push 到 `main` 自动部署（也可在 Actions 页 `workflow_dispatch` 手动�
 改 README、`docs/`、`.claude/` 不会触发一次生产部署。2026-11-05 用一条只改本文件的 push 实测过：
 没有新的 workflow run 产生。
 
-凭据是 GitHub Actions secrets `TCB_SECRET_ID` / `TCB_SECRET_KEY`，对应腾讯云子账号 `ucalc-website-ci`
-（仅编程访问；策略 `QcloudTCBFullAccess` + `QcloudCDNReadOnlyAccess`）。
+凭据是 GitHub Actions secrets `TCB_SECRET_ID` / `TCB_SECRET_KEY`，对应一个仅编程访问的腾讯云子账号
+（权限：TCB 全读写 + CDN 只读 + 该共享桶的 COS 读写）。
 
 手工部署（等价命令）：
 
@@ -112,7 +112,7 @@ npx --yes --package @cloudbase/cli@3.8.9 tcb hosting deploy ./site -e ucalc-8gcr
 | `scripts/cache-rules.json` | CDN 缓存规则载荷：静态资源边缘 1 天 / 浏览器 10 分钟，HTML·sitemap 60 秒，目录首页 60 秒 | 需要重新应用缓存规则时（控制台按此填或走 API） |
 | `scripts/website-config.before-20261028.xml` | 2026-10-28 改动前的桶静态网站配置快照（含导致 404 死循环的 `RoutingRules`） | 只有要回滚那次改动时才用 |
 
-凭据：两个脚本优先读环境变量 `COS_SECRET_ID` / `COS_SECRET_KEY`（可选 `COS_SESSION_TOKEN`），
+凭据与目标桶都走环境变量：`COS_BUCKET` 必填（桶名在 CloudBase 控制台复制），凭据优先 `COS_SECRET_ID` / `COS_SECRET_KEY`（可选 `COS_SESSION_TOKEN`），
 没有则回退 `~/.tccli/default.credential`。**tccli 的 OAuth 临时凭据会被 COS 拒绝**
 （`InvalidAccessKeyId`），那条回退路只在用永久密钥登录时可用。
 
@@ -128,7 +128,7 @@ npx --yes --package @cloudbase/cli@3.8.9 tcb hosting deploy ./site -e ucalc-8gcr
 | 小青蛙伴学文案 | `xiaoqingwa/index.html` 可见文案与 JSON-LD 同义；改数量/功能时连带 FAQ、`#trust`、页脚免责行 |
 | 小青蛙伴学隐私页 | `xiaoqingwa/privacy.html`；启用任何统计前先改「第三方与 Cookie」段，再上线脚本 |
 | 截图 | 用微信开发者工具模拟器（iPhone 12/13 Pro，390×844）逐页截取；只换 `assets/shots/` 同名 WebP：`magick in.png -resize 828x -strip -quality 82 out.webp` |
-| 截图新鲜度 | 页面改版或工具转 `offline` 后必须重拍；下线工具的截图、索引条目、chip 与 JSON-LD `featureList` 同轮删除 |
+| 截图新鲜度 | 页面改版或工具下线后必须重拍；下线工具的截图、索引条目、chip 与 JSON-LD `featureList` 同轮删除 |
 | 首屏搜索胶囊 | 文案「小而美工具」与小程序名、页尾 `#copy-name` 同源 |
 | 预览高度 | `--screen-h: min(460px, 52svh - 26px, 100svh - 380px)`；调完复跑 390 截图确认整屏可见 |
 | README 产品能力 | 只改能力词，不写数量与年级——精确数字留在产品页，见「对外口径」 |
@@ -146,19 +146,14 @@ node $S/inspect.mjs http://localhost:4174/
 依赖 `~/.codebuddy/skills`，只在本机跑；CI 只跑零依赖的 `scripts/gate.mjs`。读数与辩护记录在
 `docs/DESIGN.md`「门禁与辩护」，改版后更新那张表。
 
-## 路线（内部）
-
-- **小而美工具**：目标做到 100 款工具，当前 27 款。
-- **小青蛙伴学**：目标覆盖整个小学阶段，当前一到二年级课内内容。
-
 ## 对外口径
 
 README、GitHub 仓库描述、产品页 H1 不写工具数量、不写年级、不写路线目标——这些会过期，也容易被读成承诺。
-精确数字与目标只写在这里和产品页正文。依据见 `docs/DESIGN.md`「文案」。
+精确数字只写产品页正文，依据见 `docs/DESIGN.md`「文案」。
 
 ## 历史
 
-2026-11-03 从 `ucalc` 仓的 `website/` 迁出，替换掉本仓原来的 Next.js 落地页（旧代码仍在 git 历史里，
+2026-11-03 站点迁入 `site/`，替换掉本仓原来的 Next.js 落地页（旧代码仍在 git 历史里，
 `b560223` 之前）。域名、证书、回滚值见 `docs/2026-10-26-whinc-top-site.md`。
 
 2026-11-05 仓库由 `ucalc-website` 更名为 `website`。

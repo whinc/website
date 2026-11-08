@@ -2,7 +2,7 @@
 /**
  * 站点产物门禁（node:test，零依赖）。
  *
- * 从 ucalc 的 src/__tests__/websiteGate.test.ts 迁出：站点不再住在 ucalc 里，
+ * 从原仓的 websiteGate 测试迁出：站点不再住在原仓里，
  * 门禁跟着站点走，CI 的 gate job 直接跑这一个文件。
  *
  * 锚定 docs/2026-10-26-whinc-top-site.md（域名与路径模型、SEO 口径），断言：
@@ -19,6 +19,7 @@
 
 import * as fs from "node:fs";
 import * as path from "node:path";
+import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -43,6 +44,14 @@ const PLACEHOLDERS = [
   "127.0.0.1",
   "/Users/",
 ];
+/** 凭据特征：public 仓库最怕有人把 key 粘进文档或产物。只认高特异性前缀，避免误报 */
+const SECRET_PATTERNS = [
+  [/AKID[0-9A-Za-z]{13,}/, "腾讯云 SecretId"],
+  [/BEGIN [A-Z ]*PRIVATE KEY/, "私钥"],
+  [/gh[pousr]_[A-Za-z0-9]{20,}/, "GitHub token"],
+];
+/** 只扫文本类文件；图片、字体、PDF 等二进制跳过 */
+const TEXT_EXT = /\.(md|mjs|js|json|yml|yaml|html|css|txt|xml)$/;
 
 function walk(dir, out = []) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -179,6 +188,23 @@ test("站内引用必须相对（404.html 除外）", () => {
     }
   }
   assert.deepEqual(wrong, []);
+});
+
+test("跟踪文本不含凭据特征", () => {
+  const tracked = execFileSync("git", ["ls-files", "-z"], {
+    cwd: REPO_ROOT,
+    encoding: "utf8",
+  })
+    .split("\0")
+    .filter((rel) => TEXT_EXT.test(rel));
+  const hits = [];
+  for (const rel of tracked) {
+    const text = read(rel);
+    for (const [re, label] of SECRET_PATTERNS) {
+      if (re.test(text)) hits.push(rel + " 含 " + label);
+    }
+  }
+  assert.deepEqual(hits, []);
 });
 
 test("README 引用的仓库相对资源都存在", () => {

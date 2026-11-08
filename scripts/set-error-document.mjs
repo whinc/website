@@ -19,7 +19,8 @@ import os from 'node:os';
 import path from 'node:path';
 
 const REGION = process.env.COS_REGION || 'ap-shanghai';
-const BUCKET = process.env.COS_BUCKET || '1a69-static-ucalc-8gcrvzxk48dd172e-1252521100';
+const BUCKET = process.env.COS_BUCKET;
+if (!BUCKET) throw new Error('缺少 COS_BUCKET：桶名在 CloudBase 控制台复制');
 const HOST = `${BUCKET}.cos.${REGION}.myqcloud.com`;
 
 const XML = `<WebsiteConfiguration>

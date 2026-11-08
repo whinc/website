@@ -45,7 +45,7 @@
 
 ## 开发
 
-本仓是主站的静态源码和部署流水线；小程序源码分别在 [whinc/ucalc](https://github.com/whinc/ucalc)（小而美工具）与 [whinc/uson](https://github.com/whinc/uson)（小青蛙伴学）。
+本仓是主站的静态源码和部署流水线；两款小程序的源码在私有仓，不在本仓。
 
 - [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) — 目录结构、本地预览、门禁、部署、运维脚本
 - [docs/DESIGN.md](docs/DESIGN.md) — 视觉契约与设计门禁读数
